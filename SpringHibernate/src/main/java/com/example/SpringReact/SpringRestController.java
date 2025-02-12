@@ -2,12 +2,14 @@ package com.example.SpringReact;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -20,15 +22,18 @@ import com.example.SpringReact.service.SpringReactService;
 @RestController
 public class SpringRestController {
 	
+
 	private SpringReactService springService;
 	
-	public SpringRestController(SpringReactService thisspringService) {
-		springService=thisspringService;
+	@Autowired 
+	public SpringRestController(SpringReactService springReactService) {
+		this.springService=springReactService;
 	}
 	
 	
+	
 	@RequestMapping("/")
-	@ResponseBody
+	
 	public String test() {
 		return "Hello World";
 	}
@@ -41,13 +46,28 @@ public class SpringRestController {
 		return employees;
 	}
 	
+	@PutMapping("/employees/{id}")
+	//@ResponseBody--not required as its a RestController
+	public void updateEmployeeById(@PathVariable int id,@RequestBody Employee updateemployee) {
+		Employee employee=springService.findEmployeeById(id);
+		employee.setFirstname(updateemployee.getFirstname());
+		employee.setLastname(updateemployee.getLastname());
+		employee.setEmail(updateemployee.getEmail());
+		
+		springService.saveEmployee(employee);
+	}
+	
 	@GetMapping("/employees/{id}")
 	//@ResponseBody
 	public Employee getEmployeeById(@PathVariable int id) {
 		Employee employee=springService.findEmployeeById(id);
 		
+		/*
+		 * if(employee==null) { employee.setFirstname("No Data Found"); }
+		 */
 		return employee;
 	}
+	
 	
 	@PostMapping("/employees")
 	public void saveEmployees(@RequestBody Employee employee) {
@@ -60,7 +80,7 @@ public class SpringRestController {
 		springService.deleteByEmployeeId(id);
 	}
 	
-	@DeleteMapping("/employee/name/{name}")
+	@DeleteMapping("/employees/name/{name}")
 	public void deleteEmployeeByid(@PathVariable String name) {
 		System.out.println("Inside delete"+name);
 		springService.deleteEmployeeByName(name);
